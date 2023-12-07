@@ -2,7 +2,7 @@ import numpy as np
 from ask import Ask
 from bid import Bid
 from trade import Trade
-from agent import MarketMaker
+from agent import MarketMaker, BuyAgent, SellAgent
 
 
 
@@ -16,9 +16,7 @@ class CDA():
     # reset agents to the start of the simulation
     def reset_agents(self, initial_shares, budget, order_frequency):
         for agent in self.agents:
-            agent.num_shares = initial_shares
-            agent.budget = budget
-            agent.order_frequency = order_frequency
+            agent.reset()
 
 
     def iterate_timestep(self, iter, trade_volume, verbose=True):
@@ -65,7 +63,13 @@ class CDA():
 
     # takes agent as argument, removes the orders from the order book with this agent as a buyer or seller
     def remove_orders(self, agent):
-        self.order_book = [order for order in self.order_book if order.agent != agent]
+        bruh = []
+        for order in self.order_book:
+            if order.agent != agent:
+                bruh.append(order)
+
+        self.order_book = bruh
+        # self.order_book = [order for order in self.order_book if order.agent != agent]
 
 
     # find the most recent viable trade and execute it
@@ -130,6 +134,12 @@ class CDA():
             buyer.trades_executed += 1
             seller.trades_executed += 1
 
+
+            if isinstance(buyer, MarketMaker):
+                buyer.buys += 1
+            if isinstance(seller, MarketMaker):
+                seller.sales += 1
+
             assert(buyer.budget >= 0)
 
             new_trade = Trade(buyer, seller, order_price, spread, iter)
@@ -151,7 +161,7 @@ class CDA():
         return False
 
 
-    def calculate_returns(self, outcome, initial_budget, verbose=True):
+    def calculate_returns(self, outcome, initial_budget, market_maker_budget, verbose=True):
         if verbose:
             print("CDA results:" )
         if outcome:
@@ -167,19 +177,35 @@ class CDA():
 
 
         for agent in self.agents:
-            if verbose:
-                print("Agent " + str(agent.id) + " ended with a budget of " + str(agent.budget) + " and utility of " + str(agent.budget - initial_budget))
-            agent.results.append(agent.budget - initial_budget)
+            # if verbose:
+            #     print("Agent " + str(agent.id) + " ended with a budget of " + str(agent.budget) + " and utility of " + str(agent.budget - initial_budget))
+
+            # market makers have a separate intial budget to subtract
+            if isinstance(agent, MarketMaker):
+                agent.results.append(agent.budget - market_maker_budget)
+            else:
+                agent.results.append(agent.budget - initial_budget)
 
 
-        # print results for market making agents 
+        # print results for market making agents
         for agent in self.agents:
             if isinstance(agent, MarketMaker):
-                agent.print_status()
+                agent.print_status(market_maker_budget)
 
 
-    def calculate_average_agent_utility(self):
+    def calculate_average_agent_utility(self, include_market_makers=False):
         average_agent_utilities = []
         for agent in self.agents:
+            if isinstance(agent, MarketMaker):
+                if not include_market_makers:
+                    continue
             average_agent_utilities.append(sum(agent.results) / len(agent.results))
         return average_agent_utilities
+
+
+    def calculate_average_market_maker_utility(self):
+        market_maker_utilities = []
+        for agent in self.agents:
+            if isinstance(agent, MarketMaker):
+                market_maker_utilities.append(sum(agent.results) / len(agent.results))
+        return market_maker_utilities

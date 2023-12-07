@@ -99,7 +99,7 @@ class AMM():
             print("*"*80)
 
 
-    # do not assume each agent trades until it is unprofitable for them
+    # do not assume each agent trades until it is unprofitable for them, like in pset 9
     def trade(self, bid_or_ask, iter, verbose=True):
         if bid_or_ask is None:
             return False
