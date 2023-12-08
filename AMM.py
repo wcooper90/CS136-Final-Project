@@ -111,6 +111,11 @@ class AMM():
                  # update state history and new state
                  self.state_history.append(copy.deepcopy(self.state))
                  self.state = State(self.state.x_1 + 1, self.state.x_2)
+                 # if market maker, increment buys value
+                 if isinstance(bid_or_ask.agent, MarketMaker):
+                     bid_or_ask.agent.buys += 1
+
+
                  return True
 
         elif isinstance(bid_or_ask, Ask):
@@ -121,6 +126,10 @@ class AMM():
                  # update state history and new state
                  self.state_history.append(copy.deepcopy(self.state))
                  self.state = State(self.state.x_1, self.state.x_2 + 1)
+
+                 # if market maker, increment sales value 
+                 if isinstance(bid_or_ask.agent, MarketMaker):
+                     bid_or_ask.agent.sales += 1
                  return True
 
         return False
@@ -161,4 +170,8 @@ class AMM():
         # print results for market making agents
         for agent in self.agents:
             if isinstance(agent, MarketMaker):
-                agent.print_status()
+                agent.print_status(100000)
+
+
+    def calculate_unique_traders(self):
+        return sum([1 for agent in self.agents if agent.trades_executed != 0])

@@ -209,3 +209,7 @@ class CDA():
             if isinstance(agent, MarketMaker):
                 market_maker_utilities.append(sum(agent.results) / len(agent.results))
         return market_maker_utilities
+
+
+    def calculate_unique_traders(self):
+        return sum([1 for agent in self.agents if agent.trades_executed != 0])

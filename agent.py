@@ -78,8 +78,8 @@ class MarketMaker(Agent):
     def calculate_order(self, history):
         self.update_valuation(history)
         # replace hard coded integer with number of agents in the simulation
-        ask_orders = [Ask(self, self.ask_price) for i in range(5)]
-        bid_orders = [Bid(self, self.bid_price) for i in range(5)]
+        ask_orders = [Ask(self, self.ask_price) for i in range(50)]
+        bid_orders = [Bid(self, self.bid_price) for i in range(50)]
 
 
         return bid_orders + ask_orders
@@ -107,10 +107,10 @@ class MarketMaker(Agent):
 
             # will offer to buy a contract one standard deviation below the market price
             self.bid_price_history.append(self.bid_price)
-            self.bid_price = self.value - 0.2 * std
+            self.bid_price = self.value - std
             # will offer to sell a contract one standard deviation above the market price
             self.ask_price_history.append(self.ask_price)
-            self.ask_price = self.value + 0.2 * std
+            self.ask_price = self.value + std
 
             # print(self.value, self.bid_price, self.ask_price)
 
